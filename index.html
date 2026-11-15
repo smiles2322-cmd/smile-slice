@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1a0433">
+<meta name="description" content="Smile Slice by Smiles 2322: a neon 3D rhythm game. Swipe glowing blocks to the beat of Tammy Michelli songs, or turn any MP3 or WAV into a playable level.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Smile Slice">
+<title>Smile Slice</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="scene" aria-hidden="true"></canvas>
+<div id="loading" class="loading" role="status">Loading Smile Slice...</div>
+<div id="nogl" class="panel nogl" hidden role="alert"><h2>3D is not available</h2><p>This device or browser can't show 3D graphics right now. Try another browser, or turn on hardware acceleration.</p></div>
+<div id="live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+<main id="ui">
+  <section id="scr-title" class="screen title" aria-labelledby="t-title" hidden>
+    <p class="brand">Smiles 2322 presents</p>
+    <h1 id="t-title">Smile <span>Slice</span></h1>
+    <p class="tag">Swipe to the beat. Slice the glow.</p>
+    <div class="btns">
+      <button id="b-play" class="big primary" data-go="songs">Play</button>
+      <button class="big" data-go="scr-tutorial">How to Play</button>
+      <div class="row"><button data-go="scores">High Scores</button><button data-go="settings">Settings</button></div>
+    </div>
+    <p id="firstTip" class="tip" hidden>New here? Tap How to Play for a quick 30 second lesson.</p>
+    <p class="foot">Music by Tammy Michelli. No ads, no accounts. Everything stays on your device.</p>
+  </section>
+
+  <section id="scr-songs" class="screen panel" aria-labelledby="h-songs" hidden>
+    <h2 id="h-songs">Pick a Song</h2>
+    <fieldset class="seg">
+      <legend>Difficulty</legend>
+      <label><input type="radio" name="diff" value="easy"><span>Easy</span></label>
+      <label><input type="radio" name="diff" value="normal"><span>Normal</span></label>
+      <label><input type="radio" name="diff" value="hard"><span>Hard</span></label>
+    </fieldset>
+    <ul id="songList" class="songs" aria-label="Songs"></ul>
+    <label class="file big" for="fileIn">Add your own song (MP3 or WAV)</label>
+    <input type="file" id="fileIn" class="sr-only" accept=".mp3,.wav,audio/mpeg,audio/wav,audio/x-wav">
+    <p class="note">Smile Slice listens to your song, finds the beat, and builds Easy, Normal and Hard levels. Songs you add stay on this device only.</p>
+    <button class="back" data-go="scr-title">Back</button>
+  </section>
+
+  <section id="scr-tutorial" class="screen panel" aria-labelledby="h-tut" hidden>
+    <h2 id="h-tut">How to Play</h2>
+    <ol class="tut">
+      <li><span class="ico arrow" aria-hidden="true"></span><div><b>Swipe the arrow.</b> When a block reaches the glowing line, swipe across it the way its arrow points. Hit right on time for Perfect.</div></li>
+      <li><span class="ico dot" aria-hidden="true"></span><div><b>Smiley blocks</b> can be swiped any direction, or just tapped.</div></li>
+      <li><span class="ico bomb" aria-hidden="true"></span><div><b>Leave bombs alone.</b> Swiping a spiky red bomb costs glow and breaks your combo.</div></li>
+      <li><span class="ico wall" aria-hidden="true"></span><div><b>Lean past walls.</b> Hold the Lean button on the open side (or A and D on a keyboard) until the wall passes.</div></li>
+      <li><span class="ico combo" aria-hidden="true"></span><div><b>Chain hits</b> to grow your multiplier up to x8. Your glow bar is your health. If it empties, the song stops.</div></li>
+    </ol>
+    <p class="note">Keyboard: arrow keys swipe, Space hits smiley blocks, P pauses. Mouse: click and drag.</p>
+    <div class="btns"><button id="tutPractice" class="big primary">Practice on Easy</button><button class="back" data-go="scr-title">Back</button></div>
+  </section>
+
+  <section id="scr-settings" class="screen panel" aria-labelledby="h-set" hidden>
+    <h2 id="h-set">Settings</h2>
+    <div class="field"><label for="setOffset">Audio delay fix</label><input type="range" id="setOffset" min="-250" max="250" step="5"><output id="setOffsetVal" for="setOffset">0 ms</output></div>
+    <button data-go="scr-calib">Calibrate audio delay</button>
+    <div class="field"><label for="setPalette">Block colors</label><select id="setPalette"></select></div>
+    <div class="field check"><input type="checkbox" id="setReduce"><label for="setReduce">Reduce motion</label></div>
+    <div class="field check"><input type="checkbox" id="setLarge"><label for="setLarge">Large text</label></div>
+    <div class="field check"><input type="checkbox" id="setHaptics"><label for="setHaptics">Vibration (haptics)</label></div>
+    <p id="hapticNote" class="note" hidden>This browser does not support vibration (iPhone Safari does not).</p>
+    <div class="field"><label for="setMusic">Music volume</label><input type="range" id="setMusic" min="0" max="100"></div>
+    <div class="field"><label for="setFx">Sound effects volume</label><input type="range" id="setFx" min="0" max="100"></div>
+    <div class="btns"><button id="setReset" class="ghost">Reset settings</button><button class="back" data-go="scr-title">Back</button></div>
+  </section>
+
+  <section id="scr-calib" class="screen panel" aria-labelledby="h-cal" hidden>
+    <h2 id="h-cal">Calibrate Audio Delay</h2>
+    <p>Bluetooth headphones and some phones play sound a little late. Press Start, then tap the big button on every click you hear. Smile Slice works out the delay for you.</p>
+    <button id="calStart" class="primary">Start</button>
+    <button id="calTap" class="tapper" disabled>Tap</button>
+    <p id="calStatus" role="status">Ready when you are.</p>
+    <button class="back" data-go="settings">Back to Settings</button>
+  </section>
+
+  <section id="scr-scores" class="screen panel" aria-labelledby="h-hs" hidden>
+    <h2 id="h-hs">High Scores</h2>
+    <div class="field"><label for="hsSong">Song</label><select id="hsSong"></select></div>
+    <div class="field"><label for="hsDiff">Difficulty</label><select id="hsDiff"><option value="easy">Easy</option><option value="normal">Normal</option><option value="hard">Hard</option></select></div>
+    <table id="hsTable" class="scores"><caption class="sr-only">Top 10 scores on this device</caption><thead><tr><th scope="col">#</th><th scope="col">Score</th><th scope="col">Rank</th><th scope="col">Accuracy</th><th scope="col">Combo</th></tr></thead><tbody></tbody></table>
+    <button class="back" data-go="scr-title">Back</button>
+  </section>
+
+  <section id="scr-game" class="screen game" aria-label="Playing" hidden>
+    <div id="gameFocus" tabindex="-1" class="sr-only">Playing. Swipe, or use arrow keys.</div>
+    <div id="playLayer" class="playlayer"></div>
+    <div class="hud" aria-hidden="true">
+      <div class="hudtop">
+        <div class="sc"><div id="hudScore">0</div><div id="hudCombo"></div></div>
+        <div class="mult"><div id="hudMult">x1</div><div class="mbar"><i id="multBar"></i></div></div>
+      </div>
+      <div id="hp" class="hp" role="meter" aria-label="Glow" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><i id="hpBar"></i></div>
+      <div class="progress"><i id="prog"></i></div>
+      <div id="hudSong" class="hudsong"></div>
+    </div>
+    <button id="bPause" class="pausebtn" aria-label="Pause">II</button>
+    <div id="judges" class="judges" aria-hidden="true"></div>
+    <div id="wallWarn" class="wallwarn" role="alert" hidden></div>
+    <div class="leans" hidden><button id="leanL" class="lean l" aria-label="Lean left, hold">Lean</button><button id="leanR" class="lean r" aria-label="Lean right, hold">Lean</button></div>
+  </section>
+
+  <section id="scr-results" class="screen panel results" aria-labelledby="rTitle" hidden>
+    <h2 id="rTitle">Song cleared!</h2>
+    <p id="rSong" class="sub"></p>
+    <div class="rankbox"><div id="rRank" class="rank">S</div>
+      <dl class="stats"><dt>Score</dt><dd id="rScore"></dd><dt>Accuracy</dt><dd id="rAcc"></dd><dt>Best combo</dt><dd id="rCombo"></dd></dl></div>
+    <p id="rCounts" class="note"></p>
+    <p id="rNote" class="note"></p>
+    <table id="rTable" class="scores"><caption>Top 10 on this device</caption><thead><tr><th scope="col">#</th><th scope="col">Score</th><th scope="col">Rank</th><th scope="col">Accuracy</th><th scope="col">Combo</th></tr></thead><tbody></tbody></table>
+    <div class="btns"><button id="rAgain" class="big primary">Play Again</button><button id="rSongs">Pick Another Song</button></div>
+  </section>
+</main>
+
+<div id="pause" class="overlay" hidden><div class="panel" role="dialog" aria-modal="true" aria-labelledby="h-pause"><h2 id="h-pause">Paused</h2><div class="btns"><button id="pResume" class="big primary">Resume</button><button id="pRestart">Restart</button><button id="pQuit">Quit to Songs</button></div></div></div>
+<div id="busy" class="overlay" hidden><div class="panel" role="status"><div class="spinner" aria-hidden="true"></div><p id="busyText">Working...</p></div></div>
+<div id="msg" class="overlay" hidden><div class="panel" role="alertdialog" aria-modal="true" aria-labelledby="msgText"><p id="msgText"></p><button id="msgOk" class="primary">OK</button></div></div>
+<script type="module" src="js/game.js"></script>
+</body>
+</html>

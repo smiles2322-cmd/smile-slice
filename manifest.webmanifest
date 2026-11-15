@@ -1,0 +1,16 @@
+{
+  "name": "Smile Slice",
+  "short_name": "Smile Slice",
+  "description": "A neon 3D rhythm game by Smiles 2322. Swipe to the beat of Tammy Michelli songs or your own MP3s.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#1a0433",
+  "theme_color": "#1a0433",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
